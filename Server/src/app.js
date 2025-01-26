@@ -138,4 +138,23 @@ app.post('/product', upload.single('foto'), (req, res) => {
         }
     });
 });
+
+// Ruta para obtener la lista de productos
+
+app.get('/products', (req, res) => {
+    //Realiza una union entre productos y artists basandose en el match entre p.empleado y a.id en artists
+    const query = ` SELECT p.*, a.empleado FROM productos p JOIN artists a ON p.empleado = a.id `;
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener la lista de productos:', err);
+
+            res.status(500).json({
+
+                message: 'Error al obtener la lista de productos'
+            });
+        }
+        else { res.status(200).json(results); }
+    });
+});
+
 export default app;
