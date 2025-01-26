@@ -26,5 +26,4 @@ db.connect((err)=>{
           console.log('Datos insertados correctamente');
       }
   });
-
 export default db;
