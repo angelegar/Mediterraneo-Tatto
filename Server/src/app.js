@@ -122,6 +122,33 @@ app.get('/artists', (req, res) => {
     });
 });
 
+//obtener trabajos de un artista especifico
+app.get('/images/:id', (req, res) => {
+    const userId = req.params.id;
+    const query = 'SELECT foto FROM productos WHERE id = ?';
+
+    db.query(query, [userId], (err, result) => {
+        if (err) throw err;
+
+        if (result.length > 0) {
+            const photoPath = path.join(__dirname, result[0].foto);
+            res.sendFile(photoPath, (err) => {
+                if (err) {
+                    console.error('Error al enviar la imagen:', err);
+                    res.status(500).send('Error al enviar la imagen');
+                }
+            });
+
+            // const photoBuffer = result[0].foto; res.setHeader('Content-Type', 'image/png'); res.send(photoBuffer);
+
+        } else {
+            res.status(404).send('Imagen no encontrada');
+
+        }
+    });
+
+});
+
 // Ruta para insertar productos
 app.post('/product', upload.single('foto'), (req, res) => {
 
@@ -156,5 +183,7 @@ app.get('/products', (req, res) => {
         else { res.status(200).json(results); }
     });
 });
+
+
 
 export default app;
