@@ -110,8 +110,8 @@ app.post('/artists', upload.single('photo'), (req, res) => {
 // Ruta para obtener la lista de artistas
 
 app.get('/artists', (req, res) => {
-// Ajusta el nombre de la tabla según tu base de datos
-    const query = 'SELECT id, empleado, photo FROM artists'; 
+    // Ajusta el nombre de la tabla según tu base de datos
+    const query = 'SELECT id, empleado, photo FROM artists';
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error al obtener la lista de artists:', err);
@@ -122,4 +122,20 @@ app.get('/artists', (req, res) => {
     });
 });
 
+// Ruta para insertar productos
+app.post('/product', upload.single('foto'), (req, res) => {
+
+    const { fecha_edicion, empleado, precio, titulo } = req.body;
+    const foto = req.file ? `/uploads/${req.file.filename}` : null; // Ruta del archivo guardado
+
+    const query = `INSERT INTO productos (fecha_edicion, empleado, foto, precio, titulo)VALUES (?, ?, ?, ?, ?)`;
+    db.query(query, [fecha_edicion, empleado, foto, precio, titulo], (err, result) => {
+        if (err) {
+            console.error('Error al insertar producto:', err);
+            res.status(500).json({ message: 'Error al insertar producto' });
+        } else {
+            res.status(201).json({ message: 'Producto insertado correctamente', result });
+        }
+    });
+});
 export default app;
