@@ -5,6 +5,18 @@ import db from './db.js';
 import cors from 'cors';
 //manejar rutas de archivos y directorios en Node.js
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import multer from 'multer';
+
+
+// Definir __dirname para ES Modules
+//filename : ruta absoluta del archivo actual
+//dirname : ruta absoluta del directorio del archivo 
+// se usa ES Modules porque Node.js no proporciona estas variables automaticamente como CommonJS
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 // Se crea una instancia de la app Express, que será el server web
 const app = express();
@@ -14,6 +26,8 @@ const app = express();
 app.use(cors());
 //habilita el parsing JSON en las solicitudes HTTP, permite req.body
 app.use(express.json());
+
+app.use('/uploads', express.static(path.join(__dirname, 'src/upload')));
 
 // Ruta de registro
 app.post('/register', (req, res) => {
@@ -39,37 +53,58 @@ app.post('/register', (req, res) => {
 // Ruta de inicio de sesión
 app.post('/login', (req, res) => {
 
-  const { Email, Password } = req.body;
+    const { Email, Password } = req.body;
 
-  const query = 'SELECT * FROM usuario WHERE Email = ? AND Password = ?';
+    const query = 'SELECT * FROM usuario WHERE Email = ? AND Password = ?';
 
-   db.query(query, [Email, Password], (err, result) => {
+    db.query(query, [Email, Password], (err, result) => {
 
-    if (err) {
-      console.error('Error al verificar usuario:', err);
-      res.status(500).json({ message: 'Error en el servidor', error: err.message });
-      return;
-    }
+        if (err) {
+            console.error('Error al verificar usuario:', err);
+            res.status(500).json({ message: 'Error en el servidor', error: err.message });
+            return;
+        }
 
-    //devuelve al menos un resultado, significa que el usuario exite y la contraseña es correcta
-      if (result.length > 0) {
-        //se envia una respuesta 200 (ok) con un obj JSON que contiene un mensaje y datos del usuario
-          res.status(200).json({
-          message: 'Login exitoso',
-          user: {
-            Id: result[0].ID,
-            Nombre: result[0].Nombre,
-            Email: result[0].Email,
-            Rol: result[0].Rol
-            }
+        //devuelve al menos un resultado, significa que el usuario exite y la contraseña es correcta
+        if (result.length > 0) {
+            //se envia una respuesta 200 (ok) con un obj JSON que contiene un mensaje y datos del usuario
+            res.status(200).json({
+                message: 'Login exitoso',
+                user: {
+                    Id: result[0].ID,
+                    Nombre: result[0].Nombre,
+                    Email: result[0].Email,
+                    Rol: result[0].Rol
+                }
             });
-    //el usuario no existe o la contarseña es incoreecta se envia el 401(Unauthorized) Y un mensaje
-    } else {
-        res.status(401).json({ message: 'Credenciales inválidas' });
-    }
+            //el usuario no existe o la contarseña es incoreecta se envia el 401(Unauthorized) Y un mensaje
+        } else {
+            res.status(401).json({ message: 'Credenciales inválidas' });
+        }
 
     });
 
+});
+
+
+// Ruta para crear un nuevo artista
+// middleware de multer maneja la carga de archivos, solo sube un archivo a la vez
+// espera un campo llamado 'photo' en la solitud (req.file)
+app.post('/artists', upload.single('photo'), (req, res) => {
+    // extrae el valor empleado desde el cuerpo de la solitud(req.body), respresenta el nombre del artista o su ID
+    const { empleado } = req.body;
+    //req.file exite se almacena su ruta en la variable photo
+    const photo = req.file ? `src/upload/${req.file.fileempleado}` : null;
+    const query = 'INSERT INTO artists (empleado, photo) VALUES (?, ?)';
+    db.query(query, [empleado, photo], (err, result) => {
+        if (err) {
+            console.error('Error al crear artista:', err);
+            //Codigo de error 500(error del servidore)
+            res.status(500).json({ message: 'Error al crear artista', error: err.message });
+        } else {
+            res.status(201).json({ message: 'Artista creado correctamente', result });
+        }
+    });
 });
 
 export default app;
