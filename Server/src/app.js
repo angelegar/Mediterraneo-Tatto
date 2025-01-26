@@ -34,4 +34,42 @@ app.post('/register', (req, res) => {
     });
 });
 
+
+
+// Ruta de inicio de sesión
+app.post('/login', (req, res) => {
+
+  const { Email, Password } = req.body;
+
+  const query = 'SELECT * FROM usuario WHERE Email = ? AND Password = ?';
+
+   db.query(query, [Email, Password], (err, result) => {
+
+    if (err) {
+      console.error('Error al verificar usuario:', err);
+      res.status(500).json({ message: 'Error en el servidor', error: err.message });
+      return;
+    }
+
+    //devuelve al menos un resultado, significa que el usuario exite y la contraseña es correcta
+      if (result.length > 0) {
+        //se envia una respuesta 200 (ok) con un obj JSON que contiene un mensaje y datos del usuario
+          res.status(200).json({
+          message: 'Login exitoso',
+          user: {
+            Id: result[0].ID,
+            Nombre: result[0].Nombre,
+            Email: result[0].Email,
+            Rol: result[0].Rol
+            }
+            });
+    //el usuario no existe o la contarseña es incoreecta se envia el 401(Unauthorized) Y un mensaje
+    } else {
+        res.status(401).json({ message: 'Credenciales inválidas' });
+    }
+
+    });
+
+});
+
 export default app;
