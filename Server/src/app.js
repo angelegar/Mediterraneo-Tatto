@@ -107,4 +107,19 @@ app.post('/artists', upload.single('photo'), (req, res) => {
     });
 });
 
+// Ruta para obtener la lista de artistas
+
+app.get('/artists', (req, res) => {
+// Ajusta el nombre de la tabla según tu base de datos
+    const query = 'SELECT id, empleado, photo FROM artists'; 
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error al obtener la lista de artists:', err);
+            res.status(500).json({ message: 'Error al obtener la lista de artists' });
+        } else {
+            res.status(200).json(results);
+        }
+    });
+});
+
 export default app;
