@@ -29,6 +29,25 @@ app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/upload')));
 
+// Configuración de multer para la galería
+//multer.diskStorage especifica como y donde almacenar los archivos
+const storage = multer.diskStorage({
+    //donde se almacena
+    destination: (req, file, cb) => {
+        cb(null, 'src/upload'); // Carpeta donde se guardan las imágenes
+    },
+    //como se llamará los archivos
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`); // Nombre único para cada archivo
+    }
+
+});
+
+
+
+const upload = multer({ storage });
+
+
 // Ruta de registro
 app.post('/register', (req, res) => {
     //extrae del usuario enviados en la solicitud POST
